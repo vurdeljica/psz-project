@@ -157,5 +157,5 @@ for index, data_frame in enumerate(data_frames):
     replace_cleared_data_with_average(data_frame, index)
     table = prepare_data_for_ml(data_frame)
     cast_all_generated_columns_to_float(table)
-    table.to_csv(data_frame_names[index] + '_prepared.csv', index=False, encoding="utf-8-sig")
+    table.to_csv(data_frame_names[index] + '_prepared.csv', encoding="utf-8-sig")
 
