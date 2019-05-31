@@ -35,6 +35,8 @@ def doWork():
     list_of_jobs_per_thread = []
     start = time.time()
 
+    global list_of_translated_addresses
+
     LOCK.acquire()
     global list_of_jobs
     list_of_jobs_per_thread = list_of_jobs.pop(0)
@@ -42,9 +44,6 @@ def doWork():
 
 
     while len(list_of_jobs_per_thread) > 0:
-        time_now = time.time()
-        if (time_now - start > 60 * 60):
-            break
     #while not q.empty():
         #url_base = q.get()
         url_base = list_of_jobs_per_thread.pop(0)
@@ -94,7 +93,6 @@ def doWork():
 
         if (url_full != '--') and ("/track" not in url_full):
             list_of_translated_addresses_per_thread.append((url_base, url_full))
-            start = time.time()
             #updateDatabase(url_full, url_base)
         elif (url_full != '--') and (status_code == 404):
             continue
@@ -104,8 +102,17 @@ def doWork():
 
         #q.task_done()
 
+        time_now = time.time()
+        if (time_now - start > 60):
+            LOCK.acquire()
+            list_of_translated_addresses += list_of_translated_addresses_per_thread
+            LOCK.release()
+
+            list_of_translated_addresses_per_thread = []
+            start = time_now
+
+
     LOCK.acquire()
-    global list_of_translated_addresses
     list_of_translated_addresses += list_of_translated_addresses_per_thread
     LOCK.release()
 
@@ -120,7 +127,8 @@ def doWork():
 #q = Queue(1_000_000)
 
 for song_id in song_df['song_id']:
-    list_of_song_id.append(song_id)
+    if '/composition/' not in song_id:
+        list_of_song_id.append(song_id)
     #q.put(song_id)
 list_of_jobs = list(numpy.array_split(numpy.array(list_of_song_id), concurrent * 2))
 list_of_jobs = [list(x) for x in list_of_jobs]
@@ -132,16 +140,30 @@ for i in range(2 * concurrent):
     thread_list.append(t)
     t.start()
 
-for thread in thread_list:
-    thread.join()
+try:
+    while 1:
+        time.sleep(70)
+
+        LOCK.acquire()
+        list_of_translated_addresses_local = list_of_translated_addresses
+        list_of_translated_addresses = []
+        LOCK.release()
+
+        for translated_address in list_of_translated_addresses_local:
+            url_base = translated_address[0]
+            url = translated_address[1]
+            song_df.loc[song_df['song_id'] == url_base,'song_id'] = url
+
+        song_df = song_df.astype(str)
+        song_df.to_sql('song', cnx, if_exists='replace', index=False)
+
+except KeyboardInterrupt:
+    pass
+
+#for thread in thread_list:
+#    thread.join()
 
 #q.join()
 
 
 
-for translated_address in list_of_translated_addresses:
-    url_base = translated_address[0]
-    url = translated_address[1]
-    song_df.loc[song_df['song_id'] == url_base, ['song_id']] = url
-
-song_df.to_sql('song', cnx, if_exists='replace', index=False)
