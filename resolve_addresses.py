@@ -23,7 +23,7 @@ list_of_jobs = []
 
 
 proxies_list = []
-with open('C:/Users/igvu/Desktop/Fakultet/Drugi semestar/PSZ\psz-project/discorg_scraper/discorg_scraper/proxy.txt') as f:
+with open('C:/Users/igvu/Desktop/Fakultet/Drugi semestar/PSZ\psz-project/discogs_scraper/discogs_scraper/proxy.txt') as f:
     proxies_list = f.read().splitlines()
 
 list_of_song_id = []

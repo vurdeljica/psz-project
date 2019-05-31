@@ -19,7 +19,7 @@ print('2')
 proxies_list = []
 
 print('3')
-with open('C:/Users/igvu/Desktop/Fakultet/Drugi semestar/PSZ\psz-project/discorg_scraper/discorg_scraper/proxy.txt') as f:
+with open('C:/Users/igvu/Desktop/Fakultet/Drugi semestar/PSZ\psz-project/discogs_scraper/discogs_scraper/proxy.txt') as f:
     proxies_list = f.read().splitlines()
 
 print('4')
