@@ -8,6 +8,7 @@
 from .db_manager import DatabaseManager
 from .items import DiscogsAlbum
 from .items import DiscogsArtist
+from .items import DiscogsSongs
 
 class DiscorgScraperPipeline(object):
 
@@ -19,5 +20,7 @@ class DiscorgScraperPipeline(object):
             self.db_manager.store_album_db(item)
         elif isinstance(item, DiscogsArtist):
             self.db_manager.update_artist_info(item)
+        #elif isinstance(item, DiscogsSongs):
+        #    self.db_manager.store_song_db(item)
         return item
 

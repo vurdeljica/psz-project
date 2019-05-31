@@ -8,6 +8,7 @@ from ..items import DiscogsSongs
 from ..db_manager import DatabaseManager
 from unidecode import unidecode
 from urllib.parse import unquote
+import requests
 
 from scrapy.crawler import CrawlerProcess
 
@@ -15,6 +16,7 @@ from scrapy.crawler import CrawlerProcess
 class DiscorgSpider(scrapy.Spider):
     name = "discorg"
     start_urls = [
+        'https://www.discogs.com/search/?style_exact=Vocal&style_exact=Easy+Listening&style_exact=Folk&style_exact=Country&style_exact=Swing&genre_exact=Blues'
         #'https://www.discogs.com/search/?decade=2010&country_exact=Yugoslavia',
         #'https://www.discogs.com/search/?decade=2000&country_exact=Yugoslavia',
         #'https://www.discogs.com/search/?decade=1990&country_exact=Yugoslavia', #granica, ukljucuje
@@ -149,6 +151,7 @@ class DiscorgSpider(scrapy.Spider):
 
     def parse_album(self, response):
             db_manager = DatabaseManager()
+            base_url = "https://www.discogs.com"
 
             album_item = DiscogsAlbum()
             #artist_name and album_name
@@ -277,6 +280,7 @@ class DiscorgSpider(scrapy.Spider):
             # pesme na albumu
             tracklist_id_section = response.css(".tracklist_track_title > a::attr(href)")
             tracklist_id_section = [re.match(".*/(.*)$", tracklist_id.get()).group(1) for tracklist_id in tracklist_id_section]
+            #tracklist_id_section = [requests.get(base_url + tracklist_id.get()).url for tracklist_id in tracklist_id_section]
             tracklist_name_section = response.css(".tracklist_track_title a span::text").extract()
             tracklist_name_section = [tracklist_name.strip() for tracklist_name in tracklist_name_section]
             tracklist_duration_section = response.css(".tracklist_track_duration span::text").extract()
@@ -348,6 +352,22 @@ class DiscorgSpider(scrapy.Spider):
         #Azuriraj osobe
 
         yield artist_item
+
+    def parse2(self, response):
+        song_item = DiscogsSongs()
+
+        composition_details = response.css(".TracksTable")
+        print("Asfasfafasfg", composition_details)
+        for composition in composition_details:
+            #print(composition.css('.track-title ::text').extract())
+            song_item['song_name'] = composition_details.css('.track-title ::text').extract_first().strip()
+            song_item['album_id'] = composition_details.css().extract_first().strip()
+            song_item['duration'] = composition_details.css().extract_first().strip()
+
+            #print(song_item['song_name'], " ", song_item['album_id'], " ", song_item['duration'])
+
+        yield song_item
+
 
     def parse(self, response):
         next_page = response.css("a.pagination_next::attr(href)").get()

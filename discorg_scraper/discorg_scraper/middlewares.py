@@ -86,6 +86,8 @@ class RandomProxy(object):
         request.meta['proxy'] = proxy_address
         request.meta['download_timeout'] = 60
         request.headers['User-Agent'] = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36"
+        print("requestssssss ", request.headers)
+        print("requestssssss metaaaaaaaaaaa ", request.meta)
         if proxy_user_pass:
             basic_auth = 'Basic ' + base64.b64encode(proxy_user_pass.encode()).decode()
             request.headers['Proxy-Authorization'] = basic_auth
