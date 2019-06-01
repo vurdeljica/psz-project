@@ -78,7 +78,6 @@ def do_work():
                     sleep(61)
                     num_of_exceptions = 0
 
-                # print("exception")
                 num_of_exceptions = num_of_exceptions + 1
 
         LOCK.acquire()

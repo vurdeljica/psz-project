@@ -344,3 +344,4 @@ class DiscorgSpider(scrapy.Spider):
         except UnicodeDecodeError:
             return unquote(url, encoding='latin-1')
 
+        

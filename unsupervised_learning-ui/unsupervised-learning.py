@@ -1,4 +1,5 @@
 import numpy as np
+import os.path
 import pandas as pd
 import tkinter as tk
 
@@ -7,6 +8,8 @@ from bokeh.plotting import *
 from sklearn.cluster import *
 from sklearn.decomposition import PCA
 from tkinter import filedialog
+
+absolute_path_to_script = os.path.abspath(os.path.dirname(__file__))
 
 checkbox_columns = []
 checkbox_values = []
@@ -45,7 +48,7 @@ def get_csv():
     import_file_path = filedialog.askopenfilename()
     prepared_data_frame = pd.read_csv(import_file_path)
     checkbox_columns = list(prepared_data_frame.columns.values)
-    checkbox_columns = list(filter(lambda column: "generated" not in column, checkbox_columns))
+    checkbox_columns = list(filter(lambda column: ("generated" not in column) and ("Unnamed" not in column), checkbox_columns))
     canvas1.create_window(117, 250, window=CheckBoxColumns(root), anchor='nw')
 
 
@@ -137,11 +140,14 @@ def convert_model_from_n_to_2_dimension(features_data_frame, info_data_frame):
 
 
 def visualize_clustering_algorithm(info_data_frame):
-    output_file("kmeans.html")
+    output_file(absolute_path_to_script + '\\results\\' + "clustering.html")
     source = ColumnDataSource(info_data_frame)
     tooltips_tuples = []
     html_tooltips = ""
     for column in list(info_data_frame.columns.values):
+        if ("pca" in column) or ("color" in column):
+            continue
+
         html_tooltips += "<b>" + column + ": " + "</b> @" + column + "<br>"
         tuple = (column, '@' + column)
         tooltips_tuples.append(tuple)
