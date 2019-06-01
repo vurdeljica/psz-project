@@ -105,7 +105,7 @@ venv.bak/
 
 # project specific
 resources/discogs.db
-statistics/results
-visualization/results
-unsupervised_learning-ui/results
+statistics/results/*
+visualization/results/*
+unsupervised_learning-ui/results/*
 
