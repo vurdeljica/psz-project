@@ -102,3 +102,10 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# project specific
+resources/discogs.db
+statistics/results
+visualization/results
+unsupervised_learning-ui/results
+
