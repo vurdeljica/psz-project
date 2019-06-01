@@ -15,7 +15,11 @@ absolute_path_to_database = os.path.join(absolute_path_to_script, "..\\resources
 cnx = sqlite3.connect(absolute_path_to_database)
 
 albums_df = pd.read_sql_query("SELECT * FROM album", cnx)
+songs_df = pd.read_sql_query("SELECT * FROM song", cnx)
+artists_df = pd.read_sql_query("SELECT * FROM artist", cnx)
 albums_avg_columns = ['year', 'have', 'want', 'avg_rating', 'ratings', 'lowest', 'median', 'highest']
+songs_avg_columns = ['duration']
+artists_avg_columns = []
 
 
 def clear_regular_text_column(field_content):
@@ -57,15 +61,28 @@ def clear_last_sold(field_content):
 
     return time.mktime(datetime.strptime(field_content, '%d%b%y').timetuple())
 
+def clear_duration(field_content):
+    match = re.match('(\d+:\d+)', field_content)
+    if match is None:
+        return '0'
+
+    return calculate_seconds(match.group(1))
+
+def calculate_seconds(time_text):
+    return sum(int(x) * 60 ** i for i,x in enumerate(reversed(time_text.split(":"))))
 
 clear_columns_map = {
-    ('album_name', 'artist_names', 'album_id', 'artist_ids', 'label', 'country', 'format', 'style', 'genre'): clear_regular_text_column,
-    ('year', 'num_of_releases', 'have', 'want', 'ratings'): clear_numerical_columns,
+    ('album_name', 'artist_names', 'album_id', 'artist_ids',
+     'label', 'country', 'format', 'style', 'genre',
+     'song_id', 'song_name',
+     'artist_id', 'site'): clear_regular_text_column,
+    ('year', 'num_of_releases', 'have', 'want', 'ratings',
+     'credits', 'vocals', 'arranged_by_cnt', 'lyrics_by_cnt', 'music_by_cnt'): clear_numerical_columns,
     'avg_rating': clear_avg_rating,
     ('lowest', 'median', 'highest'): clear_album_value,
     'last_sold': clear_last_sold,
+    'duration': clear_duration
 }
-
 
 def get_cleared_column(column_name, data_frame):
     for key in clear_columns_map:
@@ -83,9 +100,9 @@ def clear_unknown_data(df):
         df[column] = get_cleared_column(column, df)
 
 
-data_frames = [albums_df]
-data_frame_names = ['albums_df']
-data_frame_avg_columns = [albums_avg_columns]
+data_frames = [albums_df, songs_df, artists_df]
+data_frame_names = ['albums_df', 'songs_df', 'artists_df']
+data_frame_avg_columns = [albums_avg_columns, songs_avg_columns, artists_avg_columns]
 
 
 def copy_generated_columns_from_df2_to_df1(df1, df2, original_column):
@@ -131,10 +148,11 @@ def transcode_numerical(column_name, data_frame):
     return numerical_data_frame
 
 
-
 transcode_map = {
     ('format', 'style', 'genre'): transcode_column_with_separator,
-    ('album_name', 'artist_names', 'album_id', 'artist_ids', 'label', 'country'): transcode_regular_text,
+    ('album_name', 'artist_names', 'album_id', 'artist_ids', 'label', 'country',
+     'song_id', 'song_name', 'album_id',
+     'artist_id', 'site'): transcode_regular_text,
 }
 
 
