@@ -1,4 +1,9 @@
+import os.path
 import sqlite3
+
+
+absolute_path_to_script = os.path.abspath(os.path.dirname(__file__))
+absolute_path_to_database = os.path.join(absolute_path_to_script, '..\\..\\resources\\discogs.db').replace('\\','/')
 
 
 class DatabaseManager(object):
@@ -16,7 +21,7 @@ class DatabaseManager(object):
             self.create_table()
 
         def create_connection(self):
-            self.conn = sqlite3.connect("discogs.db")
+            self.conn = sqlite3.connect(absolute_path_to_database)
             #self.conn = sqlite3.connect(":memory:")
             self.curr = self.conn.cursor()
 

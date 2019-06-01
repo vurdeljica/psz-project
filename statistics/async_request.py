@@ -1,4 +1,5 @@
 import asyncio
+import os.path
 import pandas as pd
 import random
 import requests
@@ -8,29 +9,27 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from timeit import default_timer
 
+absolute_path_to_script = os.path.abspath(os.path.dirname(__file__))
+absolute_path_to_database = os.path.join(absolute_path_to_script, "..\\resources\\discogs.db").replace('\\','/')
+absolute_path_to_proxy_list = os.path.join(absolute_path_to_script, "..\\resources\\proxy.txt").replace('\\','/')
+
 LOCK = threading.Lock()
 
-print('1')
 
-cnx = sqlite3.connect('C:/Users/igvu/Desktop/discogs_baze/bazeTestiranje/discogs_1990.db')
+cnx = sqlite3.connect(absolute_path_to_database)
 
-print('2')
 proxies_list = []
 
-print('3')
-with open('C:/Users/igvu/Desktop/Fakultet/Drugi semestar/PSZ\psz-project/discogs_scraper/discogs_scraper/proxy.txt') as f:
+with open(absolute_path_to_proxy_list) as f:
     proxies_list = f.read().splitlines()
 
-print('4')
 
 song_df = pd.read_sql_query("SELECT * FROM song", cnx)
 
-print('5')
 list_of_translated_addresses = []
 list_of_song_id = []
 
 START_TIME = default_timer()
-print('6')
 def fetch(session, track):
     base_url = 'https://www.discogs.com/track/'
 

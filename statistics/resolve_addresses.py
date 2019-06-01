@@ -1,4 +1,5 @@
 import numpy
+import os.path
 import pandas as pd
 import random
 import requests
@@ -9,10 +10,14 @@ import time
 from threading import Thread
 from time import sleep
 
+absolute_path_to_script = os.path.abspath(os.path.dirname(__file__))
+absolute_path_to_database = os.path.join(absolute_path_to_script, "..\\resources\\discogs.db").replace('\\','/')
+absolute_path_to_proxy_list = os.path.join(absolute_path_to_script, "..\\resources\\proxy.txt").replace('\\','/')
+
 concurrent = 150
 LOCK = threading.Lock()
 
-cnx = sqlite3.connect('C:/Users/igvu/Desktop/discogs_baze/bazeTestiranje/discogs_new_all.db')
+cnx = sqlite3.connect(absolute_path_to_database)
 
 song_df = pd.read_sql_query("SELECT * FROM song", cnx)
 
@@ -21,7 +26,7 @@ list_of_jobs = []
 
 
 proxies_list = []
-with open('C:/Users/igvu/Desktop/Fakultet/Drugi semestar/PSZ\psz-project/discogs_scraper/discogs_scraper/proxy.txt') as f:
+with open(absolute_path_to_proxy_list) as f:
     proxies_list = f.read().splitlines()
 
 list_of_song_id = []

@@ -1,4 +1,5 @@
 import numpy as np
+import os.path
 import pandas as pd
 import re
 import sqlite3
@@ -8,8 +9,10 @@ from datetime import datetime
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn import preprocessing
 
+absolute_path_to_script = os.path.abspath(os.path.dirname(__file__))
+absolute_path_to_database = os.path.join(absolute_path_to_script, "..\\resources\\discogs.db").replace('\\','/')
 
-cnx = sqlite3.connect('C:/Users/igvu/Desktop/discogs_baze/t/discogs0.db')
+cnx = sqlite3.connect(absolute_path_to_database)
 
 albums_df = pd.read_sql_query("SELECT * FROM album", cnx)
 albums_avg_columns = ['year', 'have', 'want', 'avg_rating', 'ratings', 'lowest', 'median', 'highest']
@@ -172,5 +175,5 @@ for index, data_frame in enumerate(data_frames):
     replace_cleared_data_with_average(data_frame, index)
     table = prepare_data_for_ml(data_frame)
     cast_all_generated_columns_to_float(table)
-    table.to_csv(data_frame_names[index] + '_prepared.csv', encoding="utf-8-sig")
+    table.to_csv(absolute_path_to_script + '\\results\\' + data_frame_names[index] + '_prepared.csv', encoding="utf-8-sig")
 

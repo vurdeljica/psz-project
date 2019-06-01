@@ -5,15 +5,20 @@
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
-from scrapy import signals
-
+import os.path
 import re
 import random
 import base64
 import logging
 
-log = logging.getLogger('random.proxy')
+from scrapy import signals
 
+
+absolute_path_to_script = os.path.abspath(os.path.dirname(__file__))
+absolute_path_to_proxy_list = os.path.join(absolute_path_to_script, "..\\..\\resources\\proxy.txt").replace('\\','/')
+
+
+log = logging.getLogger('random.proxy')
 
 class Mode:
     RANDOMIZE_PROXY_EVERY_REQUESTS, RANDOMIZE_PROXY_ONCE, SET_CUSTOM_PROXY = range(3)
@@ -22,13 +27,15 @@ class Mode:
 class RandomProxy(object):
     def __init__(self, settings):
         self.mode = settings.get('PROXY_MODE')
-        self.proxy_list = settings.get('PROXY_LIST')
+        #self.proxy_list = settings.get('PROXY_LIST')
+        self.proxy_list = absolute_path_to_proxy_list
         self.chosen_proxy = ''
 
         if self.mode == Mode.RANDOMIZE_PROXY_EVERY_REQUESTS or self.mode == Mode.RANDOMIZE_PROXY_ONCE:
             if self.proxy_list is None:
                 raise KeyError('PROXY_LIST setting is missing')
             self.proxies = {}
+
             fin = open(self.proxy_list)
             try:
                 for line in fin.readlines():

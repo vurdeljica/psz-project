@@ -1,13 +1,17 @@
 import collections
 import matplotlib.pyplot as plt
 import operator
+import os.path
 import pandas as pd
 import re
 import sqlite3
 
 from collections import defaultdict
 
-cnx = sqlite3.connect('C:/Users/igvu/Desktop/discogs_baze/t/discogs0.db')
+absolute_path_to_script = os.path.abspath(os.path.dirname(__file__))
+absolute_path_to_database = os.path.join(absolute_path_to_script, "..\\resources\\discogs.db").replace('\\','/')
+
+cnx = sqlite3.connect(absolute_path_to_database)
 
 albums_df = pd.read_sql_query("SELECT * FROM album", cnx)
 artist_df = pd.read_sql_query("SELECT * FROM artist", cnx)
@@ -38,7 +42,8 @@ sorted_genre_values = list(sorted_genre_dictionary.values())[0:6]
 plt.figure(1, [15, 8])
 plt.title('Most common genres')
 plt.bar(sorted_genre_keys, sorted_genre_values)
-plt.show()
+plt.savefig(absolute_path_to_script + '\\results\\' + '3a.png')
+#plt.show()
 
 ##3.b
 def calculate_seconds(time_text):
@@ -73,7 +78,8 @@ songs_by_duration_index = ["<=90", "(90, 180]", "(180, 240]", "(240, 300]", "(30
 plt.figure(2, [15, 8])
 plt.title('Songs by duration')
 plt.bar(songs_by_duration_index, songs_by_duration)
-plt.show()
+plt.savefig(absolute_path_to_script + '\\results\\' + '3b.png')
+#plt.show()
 
 #3.c
 albums_by_years = [0, 0, 0, 0, 0, 0, 0]
@@ -103,7 +109,8 @@ albums_by_years_index = ["[1950, 1960)", "[1960, 1970)", "[1970, 1980)", "[1980,
 plt.figure(3, [15, 8])
 plt.title('Albums by years')
 plt.bar(albums_by_years_index, albums_by_years)
-plt.show()
+plt.savefig(absolute_path_to_script + '\\results\\' + '3c.png')
+#plt.show()
 
 
 #3.d
@@ -125,7 +132,6 @@ for index, row in albums_df.iterrows():
 albums_by_latin_cyrillic_names_index = ["Cyrillic", "Latin"]
 sum_of_latin_cyrilic = sum(latin_cyrilic_album_names)
 latin_cyrilic_percentage = [latin_cyrilic_cnt * 100 / sum_of_latin_cyrilic for latin_cyrilic_cnt in latin_cyrilic_album_names]
-print(latin_cyrilic_percentage)
 
 plt.figure(4, [15, 8])
 plt.title('Albums names by latin/cyrillic')
@@ -136,9 +142,10 @@ for index, p in enumerate(graph.patches):
     x, y = p.get_xy()
     plt.annotate('{:.0%}'.format(latin_cyrilic_percentage[index] / 100), (x + 0.375, y + height + 500))
 
-plt.show()
+plt.savefig(absolute_path_to_script + '\\results\\' + '3d.png')
+#plt.show()
 
-##3.e
+#3.e
 genre_percentage = [0, 0, 0, 0]
 for index, row in albums_df.iterrows():
     line = row['genre']
@@ -164,4 +171,5 @@ for index, p in enumerate(graph.patches):
     x, y = p.get_xy()
     plt.annotate('{:.0%}'.format(genre_percentage[index] / 100), (x + 0.360, y + height + 500))
 
-plt.show()
+plt.savefig(absolute_path_to_script + '\\results\\' + '3e.png')
+#plt.show()

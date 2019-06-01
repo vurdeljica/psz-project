@@ -54,7 +54,7 @@ DOWNLOADER_MIDDLEWARES = {
 # http://username:password@host2:port
 # http://host3:port
 # ...
-PROXY_LIST = 'C:/Users/igvu/Desktop/Fakultet/Drugi semestar/PSZ/psz-project/discogs_scraper/discogs_scraper/proxy.txt'
+PROXY_LIST = './discogs_scraper/proxy.txt'
 
 # Proxy mode
 # 0 = Every requests have different proxy
