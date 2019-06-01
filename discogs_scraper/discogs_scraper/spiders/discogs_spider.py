@@ -1,4 +1,5 @@
 import re
+
 from ..items import *
 from ..db_manager import DatabaseManager
 from urllib.parse import unquote

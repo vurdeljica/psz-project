@@ -1,13 +1,12 @@
-import requests
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
-from timeit import default_timer
-
-import sqlite3
 import pandas as pd
 import random
-
+import requests
+import sqlite3
 import threading
+
+from concurrent.futures import ThreadPoolExecutor
+from timeit import default_timer
 
 LOCK = threading.Lock()
 

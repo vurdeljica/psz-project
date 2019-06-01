@@ -1,13 +1,14 @@
-import sqlite3
 import pandas as pd
+import sqlite3
+
 from collections import defaultdict
-import numpy as np
 
 cnx = sqlite3.connect('C:/Users/igvu/Desktop/discogs_baze/t/discogs0.db')
 
 albums_df = pd.read_sql_query("SELECT * FROM album", cnx)
 artist_df = pd.read_sql_query("SELECT * FROM artist", cnx)
 song_df = pd.read_sql_query("SELECT * FROM song", cnx)
+
 
 def get_dictionary(column, table, separator=';'):
     dictionary = defaultdict(int)
@@ -23,6 +24,7 @@ def get_dictionary(column, table, separator=';'):
 
     return dictionary
 
+
 #2.a
 genre_dictionary = get_dictionary('genre', albums_df)
 genre_df = pd.DataFrame(list(genre_dictionary.items()), columns=['genre','count'])
@@ -33,11 +35,11 @@ style_dictionary = get_dictionary('style', albums_df)
 style_df = pd.DataFrame(list(style_dictionary.items()), columns=['style','count'])
 style_df.to_csv("statistics/2b.csv", index=False, encoding="utf-8-sig")
 
-##2.c Najveci broj izdanja je 9, tako da svi spadaju ovde
+#2.c Najveci broj izdanja je 9, tako da svi spadaju ovde
 largest_num_of_releases = albums_df.sort_values(by='num_of_releases', ascending=False).head(100)
 largest_num_of_releases.to_csv('statistics/2c.csv', index=False, encoding="utf-8-sig")
 
-##2.d
+#2.d
 artist_sorted_by_credits = artist_df[artist_df['credits'] != '--']
 artist_sorted_by_credits = artist_sorted_by_credits.assign(credits=lambda d: d['credits'].astype(int))
 artist_sorted_by_credits = artist_sorted_by_credits.sort_values('credits', ascending=False).head(100)
@@ -57,7 +59,7 @@ artist_sorted_by_lyrics.to_csv('statistics/2d4.csv', index=False, encoding="utf-
 artist_sorted_by_music.to_csv('statistics/2d5.csv', index=False, encoding="utf-8-sig")
 
 
-##2.e
+#2.e
 songs_highest_appearences = song_df.groupby(['song_id']).size().reset_index(name='counts')
 songs_highest_appearences = songs_highest_appearences.sort_values('counts', ascending=False).head(100)
 columns=['songs_id', 'song_name', 'counts', 'album_id', 'album_name', 'format', 'country', 'year', 'genre', 'style']
@@ -85,7 +87,7 @@ for index, row in songs_highest_appearences.iterrows():
 
 songs_with_albums.to_csv('statistics/2e.csv', encoding="utf-8-sig")
 
-##2.f
+#2.f
 artist_with_sites = artist_df[artist_df['site'] != '--']
 artist_with_sites = artist_with_sites[['artist_id', 'site']]
 artist_with_sites.to_csv('statistics/2f.csv', index=False, encoding="utf-8-sig")

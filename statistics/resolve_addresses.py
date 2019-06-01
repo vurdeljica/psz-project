@@ -1,20 +1,18 @@
-import sqlite3
+import numpy
 import pandas as pd
 import random
 import requests
-from threading import Thread
-import sys
-from queue import Queue
-from time import sleep
-import numpy
+import sqlite3
 import threading
 import time
+
+from threading import Thread
+from time import sleep
 
 concurrent = 150
 LOCK = threading.Lock()
 
-cnx = sqlite3.connect('C:/Users/igvu/Desktop/discogs_baze/bazeTestiranje/discogs_new_all.db',
-                          check_same_thread=False)
+cnx = sqlite3.connect('C:/Users/igvu/Desktop/discogs_baze/bazeTestiranje/discogs_new_all.db')
 
 song_df = pd.read_sql_query("SELECT * FROM song", cnx)
 
@@ -30,7 +28,7 @@ list_of_song_id = []
 
 total = 0
 
-def doWork():
+def do_work():
     list_of_translated_addresses_per_thread = []
     list_of_jobs_per_thread = []
     start = time.time()
@@ -44,8 +42,6 @@ def doWork():
 
 
     while len(list_of_jobs_per_thread) > 0:
-    #while not q.empty():
-        #url_base = q.get()
         url_base = list_of_jobs_per_thread.pop(0)
         num_of_exceptions = 0
 
@@ -72,9 +68,6 @@ def doWork():
 
                 break
             except Exception as e:
-                #print(e)
-                #print(num_of_exceptions)
-
                 if num_of_exceptions == 100 and status_code == 429:
                     print("going to sleep...")
                     sleep(61)
@@ -93,17 +86,11 @@ def doWork():
 
         if (url_full != '--') and ("/track" not in url_full):
             list_of_translated_addresses_per_thread.append((url_base, url_full))
-            #updateDatabase(url_full, url_base)
-        elif (url_full != '--') and (status_code == 404):
-            continue
         else:
-            #q.put(url_base)
             list_of_jobs_per_thread.append(url_base)
 
-        #q.task_done()
-
         time_now = time.time()
-        if (time_now - start > 60):
+        if (time_now - start > 300):
             LOCK.acquire()
             list_of_translated_addresses += list_of_translated_addresses_per_thread
             LOCK.release()
@@ -116,33 +103,24 @@ def doWork():
     list_of_translated_addresses += list_of_translated_addresses_per_thread
     LOCK.release()
 
-#def updateDatabase(url, url_base):
-#    LOCK.acquire()
-#
-#    list_of_translated_addresses.append((url_base, url))
-#
-#    LOCK.release()
-
-#q = Queue(concurrent * 2)
-#q = Queue(1_000_000)
 
 for song_id in song_df['song_id']:
     if '/composition/' not in song_id:
         list_of_song_id.append(song_id)
-    #q.put(song_id)
+
 list_of_jobs = list(numpy.array_split(numpy.array(list_of_song_id), concurrent * 2))
 list_of_jobs = [list(x) for x in list_of_jobs]
 
 thread_list = []
 for i in range(2 * concurrent):
-    t = Thread(target=doWork)
+    t = Thread(target=do_work)
     t.daemon = True
     thread_list.append(t)
     t.start()
 
 try:
     while 1:
-        time.sleep(70)
+        time.sleep(1200)
 
         LOCK.acquire()
         list_of_translated_addresses_local = list_of_translated_addresses
@@ -160,10 +138,6 @@ try:
 except KeyboardInterrupt:
     pass
 
-#for thread in thread_list:
-#    thread.join()
-
-#q.join()
 
 
 

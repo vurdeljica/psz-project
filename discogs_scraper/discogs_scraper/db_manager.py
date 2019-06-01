@@ -1,5 +1,6 @@
 import sqlite3
 
+
 class DatabaseManager(object):
 
     instance = None
@@ -65,7 +66,7 @@ class DatabaseManager(object):
         def store_album_db(self, item):
             for field in item.fields:
                 item.setdefault(field, '--')
-            #print(item)
+
             self.curr.execute("""insert into album values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",(
                                     item['album_name'],
                                     item['artist_names'],

@@ -1,11 +1,11 @@
-import sqlite3
-import pandas as pd
-from collections import defaultdict
-
 import collections
-import operator
-import re
 import matplotlib.pyplot as plt
+import operator
+import pandas as pd
+import re
+import sqlite3
+
+from collections import defaultdict
 
 cnx = sqlite3.connect('C:/Users/igvu/Desktop/discogs_baze/t/discogs0.db')
 
@@ -34,8 +34,6 @@ sorted_genre_dictionary = sorted(genre_dictionary.items(), key = operator.itemge
 sorted_genre_dictionary = collections.OrderedDict(sorted_genre_dictionary)
 sorted_genre_keys = list(sorted_genre_dictionary.keys())[0:6]
 sorted_genre_values = list(sorted_genre_dictionary.values())[0:6]
-print(sorted_genre_keys)
-print(sorted_genre_values)
 
 plt.figure(1, [15, 8])
 plt.title('Most common genres')
@@ -71,8 +69,6 @@ for index, row in song_df_without_duplicates.iterrows():
 
 songs_by_duration_index = ["<=90", "(90, 180]", "(180, 240]", "(240, 300]", "(300, 360]", "360>="]
 
-print(songs_by_duration_index)
-print(songs_by_duration)
 
 plt.figure(2, [15, 8])
 plt.title('Songs by duration')
@@ -104,17 +100,16 @@ for index, row in albums_df.iterrows():
 
 albums_by_years_index = ["[1950, 1960)", "[1960, 1970)", "[1970, 1980)", "[1980, 1990)", "[1990, 2000)", "[2000, 2010)", "2010>="]
 
-print(albums_by_years_index)
-print(albums_by_years)
-
 plt.figure(3, [15, 8])
 plt.title('Albums by years')
 plt.bar(albums_by_years_index, albums_by_years)
 plt.show()
 
+
 #3.d
 def has_cyrillic(text):
-   return bool(re.search('[а-шА-Ш]', text))
+    return bool(re.search('[а-шА-Ш]', text))
+
 
 latin_cyrilic_album_names = [0, 0]
 for index, row in albums_df.iterrows():
@@ -128,10 +123,6 @@ for index, row in albums_df.iterrows():
         latin_cyrilic_album_names[1] += 1
 
 albums_by_latin_cyrillic_names_index = ["Cyrillic", "Latin"]
-
-print(albums_by_years_index)
-
-print(latin_cyrilic_album_names)
 sum_of_latin_cyrilic = sum(latin_cyrilic_album_names)
 latin_cyrilic_percentage = [latin_cyrilic_cnt * 100 / sum_of_latin_cyrilic for latin_cyrilic_cnt in latin_cyrilic_album_names]
 print(latin_cyrilic_percentage)
@@ -161,14 +152,11 @@ for index, row in albums_df.iterrows():
 
 genre_number_index = ["1", "2", "3", "4>="]
 genre_number = genre_percentage
-print(genre_number_index)
-print(genre_percentage)
 sum_of_genres = sum(genre_percentage)
 genre_percentage = [genre_cnt * 100 / sum_of_genres for genre_cnt in genre_percentage]
-print(genre_percentage)
 
 plt.figure(5, [15, 8])
-plt.title('Albums bu number of genres')
+plt.title('Albums by number of genres')
 graph = plt.bar(genre_number_index, genre_number)
 
 for index, p in enumerate(graph.patches):
