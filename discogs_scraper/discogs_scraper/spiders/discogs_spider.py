@@ -61,15 +61,19 @@ class DiscorgSpider(scrapy.Spider):
 
 
     def get_albums_on_page(self, response):
-        db_manager = DatabaseManager()
         album_links = [link.get() for link in response.css("h4 a::attr(href)")]
         album_links.remove('/sell/list')
-        for index, link in enumerate(album_links):
-            album_info = db_manager.get_album_db("https://www.discogs.com" + link)
-            if not((album_info is None) or (len(album_info) == 0)):
-                del album_links[index]
+        album_links = [album_link for album_link in album_links if not self.check_if_album_is_in_db(album_link)]
 
         return album_links
+
+    def check_if_album_is_in_db(self, album_link):
+        db_manager = DatabaseManager()
+        album_info = db_manager.get_album_db("https://www.discogs.com" + album_link)
+        if not ((album_info is None) or (len(album_info) == 0)):
+            return True
+
+        return False
 
 
     def parse_album(self, response):
@@ -219,7 +223,7 @@ class DiscorgSpider(scrapy.Spider):
         num_of_versions = response.css("#m_versions .float_fix::text").extract_first()
         if ("/master" in album_item['album_id']):
             num_of_versions = num_of_versions.strip()
-            num_of_versions = re.match(".*Versions.?\(.*([0-9]+)\).*", num_of_versions).group(1)
+            num_of_versions = re.match(".*Versions.?\(.*?([0-9]+)\).*", num_of_versions).group(1)
         elif (num_of_versions is None):
             num_of_versions = 1
         else:
@@ -285,7 +289,7 @@ class DiscorgSpider(scrapy.Spider):
         tracklist_name_section = response.css(".tracklist_track_title a span::text").extract()
         tracklist_name_section = [tracklist_name.strip() for tracklist_name in tracklist_name_section]
         tracklist_duration_section = response.css(".tracklist_track_duration span::text").extract()
-        tracklist_duration_section = [re.match(".*([0-9]+:[0-9]+).*", tracklist_duration).group(1) for
+        tracklist_duration_section = [re.match(".*?([0-9]+:[0-9]+).*", tracklist_duration).group(1) for
                                       tracklist_duration in tracklist_duration_section]
 
         for index, tracklist_name in enumerate(tracklist_id_section):
