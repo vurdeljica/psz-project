@@ -39,9 +39,17 @@ style_dictionary = get_dictionary('style', albums_df)
 style_df = pd.DataFrame(list(style_dictionary.items()), columns=['style','count'])
 style_df.to_csv(absolute_path_to_script + "\\results\\2b.csv", index=False, encoding="utf-8-sig")
 
-#2.c Najveci broj izdanja je 9, tako da svi spadaju ovde
+#2.c
 albums_df['num_of_releases']=albums_df['num_of_releases'].astype(int)
-largest_num_of_releases = albums_df.sort_values(by='num_of_releases', ascending=False).head(100)
+largest_num_of_releases = albums_df.sort_values(by='num_of_releases', ascending=False)
+index = 20
+while True:
+    if len(set(largest_num_of_releases['num_of_releases'].values[:index])) == 21:
+        break
+
+    index += 1
+
+largest_num_of_releases = largest_num_of_releases.head(index-1)
 largest_num_of_releases.to_csv(absolute_path_to_script + '\\results\\2c.csv', index=False, encoding="utf-8-sig")
 
 #2.d
