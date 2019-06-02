@@ -40,6 +40,7 @@ style_df = pd.DataFrame(list(style_dictionary.items()), columns=['style','count'
 style_df.to_csv(absolute_path_to_script + "\\results\\2b.csv", index=False, encoding="utf-8-sig")
 
 #2.c Najveci broj izdanja je 9, tako da svi spadaju ovde
+albums_df['num_of_releases']=albums_df['num_of_releases'].astype(int)
 largest_num_of_releases = albums_df.sort_values(by='num_of_releases', ascending=False).head(100)
 largest_num_of_releases.to_csv(absolute_path_to_script + '\\results\\2c.csv', index=False, encoding="utf-8-sig")
 
