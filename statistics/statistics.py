@@ -50,6 +50,10 @@ while True:
     index += 1
 
 largest_num_of_releases = largest_num_of_releases.head(index-1)
+largest_num_of_releases = largest_num_of_releases.groupby(['album_name', 'artist_names', 'artist_ids', 'num_of_releases','country'])
+largest_num_of_releases = pd.DataFrame(largest_num_of_releases.size().reset_index(name = "Group_Count"))
+largest_num_of_releases = largest_num_of_releases.sort_values(by='num_of_releases', ascending=False)
+largest_num_of_releases = largest_num_of_releases.drop(columns=['Group_Count'])
 largest_num_of_releases.to_csv(absolute_path_to_script + '\\results\\2c.csv', index=False, encoding="utf-8-sig")
 
 #2.d

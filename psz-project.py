@@ -21,7 +21,7 @@ optional_parameters.add_argument("-p", "--part", type=int, metavar='', required=
                                       "1 - Generate statistics \n"
                                       "2 - Data visualization \n"
                                       "3 - Run unsupervised clustering UI app \n"
-                                      "4 - Run trunscoding \n"
+                                      "4 - Run transcoding \n"
                                       "5 - Run resolving song ids synchronous (Sending 500 000 requests to server) \n"
                                       "6 - Run resolving song ids asynchronous (Sending 500 000 requests to server) \n")
 
@@ -63,6 +63,7 @@ if __name__ == '__main__':
     if args.clean:
         clean_all()
     else:
-        for part in args.part:
-            start_script(part)
+        if args.part is not None:
+            for part in args.part:
+                start_script(part)
 

@@ -1,5 +1,9 @@
 import re
 
+import os.path
+import sqlite3
+import pandas as pd
+
 from ..items import *
 from ..db_manager import DatabaseManager
 from urllib.parse import unquote
@@ -8,7 +12,7 @@ from urllib.parse import unquote
 class DiscorgSpider(scrapy.Spider):
     name = "discogs"
     start_urls = [
-        'https://www.discogs.com/search/?decade=2010&country_exact=Yugoslavia',
+        'https://www.discogs.com/search/?decade=2010&country_exact=Yugoslavia'
         'https://www.discogs.com/search/?decade=2000&country_exact=Yugoslavia',
         'https://www.discogs.com/search/?decade=1990&country_exact=Yugoslavia',
         'https://www.discogs.com/search/?year=1980&decade=1980&country_exact=Yugoslavia',
@@ -49,6 +53,7 @@ class DiscorgSpider(scrapy.Spider):
         'https://www.discogs.com/search/?decade=2000&country_exact=Serbia',
         'https://www.discogs.com/search/?decade=1990&country_exact=Serbia'
     ]
+
 
     def parse(self, response):
         album_links_on_page = self.get_albums_on_page(response)
@@ -221,13 +226,15 @@ class DiscorgSpider(scrapy.Spider):
 
     def parse_album_number_of_releases(self, response, album_item):
         num_of_versions = response.css("#m_versions .float_fix::text").extract_first()
-        if ("/master" in album_item['album_id']):
+        if num_of_versions is None:
+            num_of_versions = 1
+        elif "/master" not in album_item['album_id']:
+            num_of_versions = num_of_versions.strip()
+            num_of_versions = re.match(".*Versions.?\(.*?([0-9]+)\).*", num_of_versions)
+            num_of_versions = str(int(num_of_versions.group(1)) + 1)
+        elif "/master" in album_item['album_id']:
             num_of_versions = num_of_versions.strip()
             num_of_versions = re.match(".*Versions.?\(.*?([0-9]+)\).*", num_of_versions).group(1)
-        elif (num_of_versions is None):
-            num_of_versions = 1
-        else:
-            num_of_versions = 0
 
         album_item['num_of_releases'] = num_of_versions
 
