@@ -1,9 +1,5 @@
 import re
 
-import os.path
-import sqlite3
-import pandas as pd
-
 from ..items import *
 from ..db_manager import DatabaseManager
 from urllib.parse import unquote
@@ -21,7 +17,7 @@ class DiscorgSpider(scrapy.Spider):
         'https://www.discogs.com/search/?year=1983&decade=1980&country_exact=Yugoslavia',
         'https://www.discogs.com/search/?year=1984&decade=1980&country_exact=Yugoslavia',
         'https://www.discogs.com/search/?year=1985&decade=1980&country_exact=Yugoslavia',
-        'https://www.discogs.com/search/?year=1986&decade=1980&country_exact=Yugoslavia'
+        'https://www.discogs.com/search/?year=1986&decade=1980&country_exact=Yugoslavia',
         'https://www.discogs.com/search/?year=1987&decade=1980&country_exact=Yugoslavia',
         'https://www.discogs.com/search/?year=1988&decade=1980&country_exact=Yugoslavia',
         'https://www.discogs.com/search/?year=1989&decade=1980&country_exact=Yugoslavia',
@@ -40,6 +36,8 @@ class DiscorgSpider(scrapy.Spider):
         'https://www.discogs.com/search/?decade=1940&country_exact=Yugoslavia',
         'https://www.discogs.com/search/?decade=1930&country_exact=Yugoslavia',
         'https://www.discogs.com/search/?decade=1920&country_exact=Yugoslavia',
+        'https://www.discogs.com/search/?sort=date_added%2Cdesc&type=release&country=Yugoslavia&q=+-2016+-2015+-2014+-2013+-2012+-2011+-2010+-2009+-2008+-2007+-2006+-2005+-2004+-2003+-2002+-2001+-2000+-1999+-1998+-1997+-1996+-1995+-1994+-1993+-1992+-1991+-1990+-1989+-1988+-1987+-1986+-1985+-1984+-1983+-1982+-1981+-1980+-1979+-1978+-1977+-1976+-1975+-1974+-1973+-1972+-1971+-1970+-1969+-1968+-1967+-1966+-1965+-1964+-1963+-1962+-1961+-1960+-1959+-1958+-1957+-1956+-1955+-1954+-1953+-1952+-1951',
+        'https://www.discogs.com/search/?sort=date_added%2Cdesc&type=master&country=Yugoslavia&q=+-2016+-2015+-2014+-2013+-2012+-2011+-2010+-2009+-2008+-2007+-2006+-2005+-2004+-2003+-2002+-2001+-2000+-1999+-1998+-1997+-1996+-1995+-1994+-1993+-1992+-1991+-1990+-1989+-1988+-1987+-1986+-1985+-1984+-1983+-1982+-1981+-1980+-1979+-1978+-1977+-1976+-1975+-1974+-1973+-1972+-1971+-1970+-1969+-1968+-1967+-1966+-1965+-1964+-1963+-1962+-1961+-1960+-1959+-1958+-1957+-1956+-1955+-1954+-1953+-1952+-1951',
         'https://www.discogs.com/search/?year=2010&decade=2010&country_exact=Serbia',
         'https://www.discogs.com/search/?year=2011&decade=2010&country_exact=Serbia',
         'https://www.discogs.com/search/?year=2012&decade=2010&country_exact=Serbia',
@@ -51,8 +49,15 @@ class DiscorgSpider(scrapy.Spider):
         'https://www.discogs.com/search/?year=2018&decade=2010&country_exact=Serbia',
         'https://www.discogs.com/search/?year=2019&decade=2010&country_exact=Serbia',
         'https://www.discogs.com/search/?decade=2000&country_exact=Serbia',
-        'https://www.discogs.com/search/?decade=1990&country_exact=Serbia'
+        'https://www.discogs.com/search/?decade=1990&country_exact=Serbia',
+        'https://www.discogs.com/search/?sort=date_added%2Cdesc&country=Serbia&type=release&q=+-2016+-2015+-2014+-2013+-2012+-2011+-2010+-2009+-2008+-2007+-2006+-2005+-2004+-2003+-2002+-2001+-2000+-1999+-1998+-1997+-1996+-1995+-1994+-1993+-1992+-1991+-1990+-1989+-1988+-1987+-1986+-1985+-1984+-1983+-1982+-1981+-1980+-1979+-1978+-1977+-1976+-1975+-1974+-1973+-1972+-1971+-1970+-1969+-1968+-1967+-1966+-1965+-1964+-1963+-1962+-1961+-1960+-1959+-1958+-1957+-1956+-1955+-1954+-1953+-1952+-1951&country_exact=Serbia'
     ]
+
+    ids_seen = DatabaseManager().get_songs_set()
+
+    def closed(self, reason):
+        db_manager = DatabaseManager()
+        db_manager.save_database_to_disk()
 
 
     def parse(self, response):
@@ -71,6 +76,7 @@ class DiscorgSpider(scrapy.Spider):
         album_links = [album_link for album_link in album_links if not self.check_if_album_is_in_db(album_link)]
 
         return album_links
+
 
     def check_if_album_is_in_db(self, album_link):
         db_manager = DatabaseManager()
@@ -94,8 +100,13 @@ class DiscorgSpider(scrapy.Spider):
             self.parse_album_info(response, album_item)
             self.parse_album_statistics(response, album_item)
             self.parse_album_number_of_releases(response, album_item)
-            self.parse_album_credits(response)
-            self.parse_album_tracks(response, album_item)
+            #self.parse_album_credits(response)
+
+            tracklist_id_section, song_item_list = self.parse_album_tracks(response, album_item)
+            for index, tracklist_id in enumerate(tracklist_id_section):
+                song_item = song_item_list[index]
+                yield response.follow("https://www.discogs.com/track/" + tracklist_id,
+                                  callback=self.parse_song, meta={'song_item': song_item}, dont_filter=True)
 
             yield album_item
 
@@ -288,7 +299,7 @@ class DiscorgSpider(scrapy.Spider):
 
 
     def parse_album_tracks(self, response, album_item):
-        db_manager = DatabaseManager()
+        #db_manager = DatabaseManager()
         tracklist_id_section = response.css(".tracklist_track_title > a::attr(href)")
         tracklist_id_section = [re.match(".*/(.*)$", tracklist_id.get()).group(1) for tracklist_id in
                                 tracklist_id_section]
@@ -296,9 +307,21 @@ class DiscorgSpider(scrapy.Spider):
         tracklist_name_section = response.css(".tracklist_track_title a span::text").extract()
         tracklist_name_section = [tracklist_name.strip() for tracklist_name in tracklist_name_section]
         tracklist_duration_section = response.css(".tracklist_track_duration span::text").extract()
-        tracklist_duration_section = [re.match(".*?([0-9]+:[0-9]+).*", tracklist_duration).group(1) for
-                                      tracklist_duration in tracklist_duration_section]
+        #tracklist_duration_section = [re.match(".*?([0-9]+:[0-9]+).*", tracklist_duration).group(1) for
+        #                              tracklist_duration in tracklist_duration_section]
 
+        tracklist_duration_temp = []
+        for tracklist_duration in tracklist_duration_section:
+            duration = re.match(".*?([0-9]+:[0-9]+).*", tracklist_duration)
+            if duration is None:
+                duration = '--'
+            else:
+                duration = duration.group(1)
+            tracklist_duration_temp.append(duration)
+
+        tracklist_duration_section = tracklist_duration_temp
+
+        song_item_list = []
         for index, tracklist_name in enumerate(tracklist_id_section):
             # Ubaci u vezu album_id-pesma_id-duration
             song_item = DiscogsSongs()
@@ -307,7 +330,59 @@ class DiscorgSpider(scrapy.Spider):
             song_item['album_id'] = album_item['album_id']
             song_item['duration'] = tracklist_duration_section[index] if index < len(
                 tracklist_duration_section) else "--"
-            db_manager.store_song_db(song_item)
+            song_item_list.append(song_item)
+
+            #db_manager.store_song_db(song_item)
+
+        return tracklist_id_section, song_item_list
+
+    def parse_song(self, response):
+        db_manager = DatabaseManager()
+
+        song_item = response.meta.get('song_item')
+        song_item['song_id'] = response.request.url
+
+        if song_item['song_id'] not in self.ids_seen:
+            self.ids_seen.add(song_item['song_id'])
+
+            writing_credits = response.css(".TrackCredits .TrackFact .content")
+
+            set_of_needed_credits = {"music by", "lyrics by", "arranged by"}
+            for credits_line in writing_credits:
+                section_line_name = credits_line.css("h4::text").extract_first().strip()
+                print("credits ", section_line_name)
+
+                artist_links = credits_line.css("a::attr(href)")
+
+                for artist_link in artist_links:
+
+                    artist_id = artist_link.get()
+                    artist_clear_link = re.match("(.*)/tracks$", artist_id)
+                    if artist_clear_link is not None:
+                        artist_id = artist_clear_link.group(1)
+
+                    print("artist id: ", artist_id)
+
+                    if "Various?anv=" in artist_id:
+                        continue
+
+                    artist_item = self.get_artist_item(artist_id)
+                    yield response.follow(artist_id, callback=self.parse_artist)
+
+                    if section_line_name not in set_of_needed_credits:
+                        db_manager.store_artist_statistics(artist_item)
+                        continue
+
+                    if section_line_name == "music by":
+                        artist_item['music_by_cnt'] += 1
+                    elif section_line_name == "lyrics by":
+                        artist_item['lyrics_by_cnt'] += 1
+                    elif section_line_name == "arranged by":
+                        artist_item['arranged_by_cnt'] += 1
+
+                    db_manager.store_artist_statistics(artist_item)
+
+        yield song_item
 
 
 
@@ -317,6 +392,11 @@ class DiscorgSpider(scrapy.Spider):
         self.parse_artist_id(response, artist_item)
         self.parse_artist_credits_and_vocals(response, artist_item)
         self.parse_artist_sites(response, artist_item)
+
+        #artist_aliases = self.parse_artist_aliases(response)
+        #print("Aliases:", artist_aliases)
+        #for alias in artist_aliases:
+        #    pass
 
         yield artist_item
 
@@ -348,6 +428,17 @@ class DiscorgSpider(scrapy.Spider):
 
         links = " ; ".join(links) if len(links) != 0 else "--"
         artist_item['site'] = links
+
+    def parse_artist_aliases(self, response):
+        content_topic = response.css(".head::text").extract()
+        content_body = response.css(".content")
+        links = []
+        for index, topic in enumerate(content_topic):
+            if topic == "Aliases:":
+                links = [link.get() for link in content_body[index].css("a::attr(href)")]
+                break
+
+        return links
 
     def cleanup_unicode(self, url):
         try:

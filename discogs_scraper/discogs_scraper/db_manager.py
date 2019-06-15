@@ -1,4 +1,6 @@
+import os
 import os.path
+import pandas as pd
 import sqlite3
 
 
@@ -21,9 +23,29 @@ class DatabaseManager(object):
             self.create_table()
 
         def create_connection(self):
-            self.conn = sqlite3.connect(absolute_path_to_database)
-            #self.conn = sqlite3.connect(":memory:")
+            #self.conn = sqlite3.connect(absolute_path_to_database)
+            self.conn = sqlite3.connect(":memory:")
             self.curr = self.conn.cursor()
+
+            conn2 = sqlite3.connect(absolute_path_to_database)
+            with conn2:
+                for line in conn2.iterdump():
+                    if line not in ('BEGIN;', 'COMMIT;'):  # let python handle the transactions
+                        self.conn.execute(line)
+            conn2.commit()
+            conn2.close()
+
+        def save_database_to_disk(self):
+            if os.path.exists(absolute_path_to_database):
+                os.remove(absolute_path_to_database)
+
+            conn2 = sqlite3.connect(absolute_path_to_database)
+            with conn2:
+                for line in self.conn.iterdump():
+                    if line not in ('BEGIN;', 'COMMIT;'):  # let python handle the transactions
+                        conn2.execute(line)
+            conn2.commit()
+            conn2.close()
 
         def create_table(self):
             self.curr.execute("""create table if not exists album(
@@ -170,3 +192,11 @@ class DatabaseManager(object):
 
             return self.curr.fetchall()
 
+        def get_songs_set(self):
+            song_df = pd.read_sql_query("SELECT * FROM song", self.conn)
+            return set(song_df['song_id'])
+
+        def get_song_db(self, song_id, album_id):
+            self.curr.execute("""SELECT * FROM song WHERE song_id = (?) AND album_id = (?) """, (song_id, album_id))
+
+            return self.curr.fetchall()

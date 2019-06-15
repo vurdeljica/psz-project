@@ -23,7 +23,7 @@ ROBOTSTXT_OBEY = True
 
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 2
+CONCURRENT_REQUESTS = 80
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -31,15 +31,16 @@ ROBOTSTXT_OBEY = True
 #DOWNLOAD_DELAY = 60/120.0
 DOWNLOAD_DELAY = 0
 # The download delay setting will honor only one of:
-#CONCURRENT_REQUESTS_PER_DOMAIN = 16
+#LOG_ENABLED=False
+CONCURRENT_REQUESTS_PER_DOMAIN = 999
 #CONCURRENT_REQUESTS_PER_IP = 120
-CONCURRENT_REQUESTS_PER_IP = 100
+#CONCURRENT_REQUESTS_PER_IP = 10
 
 #LOG_STDOUT = True
 #LOG_FILE = 'C:/Users/igvu/Desktop/Fakultet/Drugi semestar/PSZ/psz-project/discogs_scraper/discogs_scraper/output.txt'
 
 # Retry many times since proxies often fail
-RETRY_TIMES = 100
+RETRY_TIMES = 15
 # Retry on most error codes since proxies fail for different reasons
 RETRY_HTTP_CODES = [500, 503, 504, 400, 403, 404, 408, 429]
 

@@ -25,6 +25,9 @@ class Mode:
 
 
 class RandomProxy(object):
+
+    proxy_index = 0
+
     def __init__(self, settings):
         self.mode = settings.get('PROXY_MODE')
         #self.proxy_list = settings.get('PROXY_LIST')
@@ -54,6 +57,8 @@ class RandomProxy(object):
                 fin.close()
             if self.mode == Mode.RANDOMIZE_PROXY_ONCE:
                 self.chosen_proxy = random.choice(list(self.proxies.keys()))
+                #self.chosen_proxy = list(self.proxies.keys())[self.proxy_index]
+                proxy_index = (self.proxy_index + 1) % len(list(self.proxies.keys()))
         elif self.mode == Mode.SET_CUSTOM_PROXY:
             custom_proxy = settings.get('CUSTOM_PROXY')
             self.proxies = {}
@@ -90,7 +95,7 @@ class RandomProxy(object):
         proxy_user_pass = self.proxies[proxy_address]
 
         request.meta['proxy'] = proxy_address
-        request.meta['download_timeout'] = 240
+        request.meta['download_timeout'] = 180
         request.headers['User-Agent'] = "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.93 Safari/537.36"
         if proxy_user_pass:
             basic_auth = 'Basic ' + base64.b64encode(proxy_user_pass.encode()).decode()

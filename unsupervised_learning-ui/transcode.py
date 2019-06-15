@@ -33,7 +33,8 @@ def clear_album_value(field_content):
     if field_content == '--' or field_content == 'Never':
         return '0'
 
-    return re.match('.+?(\d+\.\d{2})$', field_content).group(1)
+    field_content = field_content.replace(',', '.')
+    return re.match('.+?(\d+[\.,]?\d{1,10})$', field_content).group(1)
 
 
 def clear_avg_rating(field_content):

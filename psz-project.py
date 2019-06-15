@@ -16,14 +16,12 @@ parser = argparse.ArgumentParser(description='PSZ project cli interface', format
 
 optional_parameters = parser.add_argument_group('optional arguments')
 
-optional_parameters.add_argument("-p", "--part", type=int, metavar='', required=False, nargs='+', choices=range(1, 7),
+optional_parameters.add_argument("-p", "--part", type=int, metavar='', required=False, nargs='+', choices=range(1, 5),
                                  help="choose which part do you want to run (can combine multiple parts): \n"
                                       "1 - Generate statistics \n"
                                       "2 - Data visualization \n"
                                       "3 - Run unsupervised clustering UI app \n"
-                                      "4 - Run transcoding \n"
-                                      "5 - Run resolving song ids synchronous (Sending 500 000 requests to server) \n"
-                                      "6 - Run resolving song ids asynchronous (Sending 500 000 requests to server) \n")
+                                      "4 - Run transcoding \n")
 
 optional_parameters.add_argument("-c", "--clean", required=False, action="store_true",
                                  help="clean all the generated results, except database")
@@ -53,10 +51,6 @@ def start_script(part):
         os.system('python ./unsupervised_learning-ui/unsupervised-learning.py')
     elif part == 4:
         os.system('python ./unsupervised_learning-ui/transcode.py')
-    elif part == 5:
-        os.system('python ./statistics/resolve_address.py')
-    elif part == 6:
-        os.system('python ./statistics/async_request.py')
 
 
 if __name__ == '__main__':
