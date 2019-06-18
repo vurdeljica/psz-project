@@ -163,6 +163,9 @@ def visualize_clustering_algorithm(info_data_frame):
 
     p = figure(plot_width=2000, plot_height=800, tools=[custom_hover, BoxZoomTool(), PanTool(), WheelZoomTool()],
                output_backend='webgl')
+
+    p.sizing_mode = 'scale_width'
+
     p.circle('pca1', 'pca2', size=5, source=source, color='color', fill_alpha=0.2)
 
     show(p)
@@ -236,7 +239,7 @@ entry1 = tk.Entry(root)
 canvas1.create_window(200, 175, window=entry1)
 
 
-processButton = tk.Button(text=' Process k-Means ', command=getKMeans, bg='brown', fg='white',
+processButton = tk.Button(text=' Process', command=getKMeans, bg='brown', fg='white',
                           font=('helvetica', 10, 'bold'))
 canvas1.create_window(200, 210, window=processButton)
 
